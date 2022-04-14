@@ -1,44 +1,58 @@
 - name: Make vm directory
   file:
     state: directory
-    path: "/var/kvm/images/{{ vm.uuid }}"
+    path: "/var/kvm/images/{{ item.uuid }}"
+  loop: "{{ vms }}"
 
 - name: Make vm-specific image
   command:
-    cmd: "qemu-img convert -O {{ vm.src_img_fmt }} {{ vm.src_img }} {{ vm.uuid }}/{{ vm.src_img }}.img"
+    cmd: "qemu-img convert -O {{ item.src_img_fmt }} {{ item.img_dir }}/{{ item.src_img }} {{ item.uuid }}/{{ item.src_img }}"
     chdir: /var/kvm/images
+  loop: "{{ vms }}"
 
-- name: Make cloud-init needed files
+- name: Make metadata file
   template:
-    src: "{{ item.src }}"
-    dest: "/var/kvm/images/{{ vm.uuid }}/{{ item.dest }}"
+    src: meta-data.yaml.j2
+    dest: "/var/kvm/images/{{ item.uuid }}/meta-data.yaml"
   vars:
-    key1: "{{ lookup('file', vm.keyfile) }}"
-  loop:
-  - src: meta-data.yaml.j2
-    dest: meta-data.yaml
-  - src: user-data.yaml.j2
-    dest: user-data.yaml
-  - src: net-config.yaml.j2
-    dest: net-config.yaml
+    name: "{{ item.name }}"
+  loop: "{{ vms }}"
+
+- name: Make user-data file
+  template:
+    src: user-data.yaml.j2
+    dest: "/var/kvm/images/{{ item.uuid }}/user-data.yaml"
+  vars:
+    key1: "{{ lookup('file', item.keyfile) }}"
+  loop: "{{ vms }}"
+
+- name: Make net-config file
+  template:
+    src: net-config.yaml.j2
+    dest: "/var/kvm/images/{{ item.uuid }}/net-config.yaml"
+  vars:
+    ip: "{{ item.ip }}"
+  loop: "{{ vms }}"
 
 - name: Create the ISO image
   command:
     cmd: cloud-localds cloud-init.iso user-data.yaml meta-data.yaml --network-config=net-config.yaml
-    chdir: "/var/kvm/images/{{ vm.uuid }}"
+    chdir: "/var/kvm/images/{{ item.uuid }}"
+  loop: "{{ vms }}"
 
 - name: Launch the VM
   command:
     cmd: >
       /usr/bin/qemu-system-x86_64 -enable-kvm
-      -drive file=/var/kvm/images/{{ vm.uuid }}/{{ vm.src_img }},if=virtio
-      -cdrom /var/kvm/images/{{ vm.uuid }}/cloud-init.iso
+      -drive file=/var/kvm/images/{{ item.uuid }}/{{ item.src_img }},if=virtio
+      -cdrom /var/kvm/images/{{ item.uuid }}/cloud-init.iso
       -daemonize
       -display none
       -smp cpus=1
       -m 1G
-      -net nic,netdev=tap1,macaddr={{ vm.mac }}
+      -net nic,netdev=tap1,macaddr={{ item.mac }}
       -netdev bridge,id=tap1,br=br0
       -d int
-      -D /var/log/qemu/{{ vm.uuid }}-qemu.log
+      -D /var/log/qemu/{{ item.uuid }}-qemu.log
   become: True
+  loop: "{{ vms }}"

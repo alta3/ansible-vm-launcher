@@ -16,12 +16,13 @@
 
   - name: make-vm
     vars:
-      vm:
-        src_img: /var/kvm/images/bionic.img
+      vms:
+      - img_dir: /var/kvm/images 
+        src_img: bionic.img
         src_img_fmt: qcow2
         ip: 172.16.0.6/24  # with CIDR
         name: vm-1
         uuid: 8675309
         mac: "{{ 'aa:a3:a3' | random_mac }}"
-        keyfile: ~/.ssh/id_rsa
+        keyfile: ~/.ssh/id_rsa.pub
 
