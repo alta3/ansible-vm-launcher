@@ -1,0 +1,148 @@
+- name: Launch a VM
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+  - name: Assure packages for qemu are ready
+    apt:
+      name:
+      - bridge-utils
+      - qemu-kvm
+      - cloud-utils
+    become: True
+
+  - name: Create needed dirs
+    file:
+      state: directory
+      path: "{{ item }}"
+      mode: 0755
+      owner: student
+      group: student
+    become: True
+    loop:
+    - /etc/qemu/  # Step 18
+    - /var/kvm/images # Step 23
+    - /var/log/qemu # 29
+
+  - name: deploy bridge and forwarding networking configuration files
+    copy:
+      src: "{{ item.src }}"
+      dest: "{{ item.dest }}"
+    become: True
+    loop:
+    # Step 9
+    - src: "files/br_nf.conf"
+      dest: "/etc/modules-load.d/br_nf.conf"
+    # Step 18
+    - src: "files/bridge.conf"
+      dest: "/etc/qemu/bridge.conf"
+
+  # Step 10
+  - name: insert br_netfilter kernel module
+    modprobe:
+      state: present
+      name: br_netfilter
+    become: True
+
+  - name: deploy sysctl bridge and networking settings
+    sysctl:
+      name: "{{ item.name }}"
+      value: "{{ item.value }}"
+      reload: True
+      state: "present"
+    with_items:
+    # Step 14, 16
+    - name:  net.bridge.bridge-nf-call-ip6tables
+      value: 0
+    - name: net.bridge.bridge-nf-call-iptables
+      value: 0
+    - name: net.bridge.bridge-nf-call-arptables
+      value: 0
+    - name: net.ipv4.ip_forward
+    # Step 15, 16
+      value: 1
+    - name: net.ipv6.conf.default.forwarding
+      value: 1
+    - name: net.ipv6.conf.all.forwarding
+      value: 1
+    become: True
+
+  - name: Create and configure br0
+    command:
+      cmd: "{{ item }}"
+    become: True
+    loop:
+    # Step 19
+    - "ip link add name br0 type bridge"
+    # Step 20
+    - "ip address add 172.16.0.1/24 dev br0"
+    # Step 21
+    - "ip link set br0 up"
+    ignore_errors: True
+
+  - name: Download Ubuntu 18.04 cloud image
+    get_url:
+      # Step 23
+      url: https://static.alta3.com/projects/kvm/bionic-server-cloudimg-amd64.img
+      dest: /var/kvm/images/bionic.img  # Made name shorter
+
+  - name: Increase Ubuntu image size and make a copy of the image
+    command:
+      cmd: "{{ item }}"
+    loop:
+    - qemu-img resize /var/kvm/images/bionic.img 8g
+    - qemu-img convert -O qcow2 /var/kvm/images/bionic.img /var/kvm/images/beachhead.img
+
+  - name: Make cloud-init needed files
+    template:
+      src: "{{ item.src }}"
+      dest: "/var/kvm/images/{{ item.dest }}"
+    vars:
+      key1: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+    loop:
+    # Step 34
+    - src: meta-data.yaml
+      dest: meta-data.yaml
+    # Step 35
+    - src: user-data.yaml.j2
+      dest: user-data.yaml
+    # Step 36
+    - src: net-config.yaml
+      dest: net-config.yaml
+
+  - name: Create the ISO image
+    command:
+      # Step 37
+      cmd: cloud-localds cloud-init.iso user-data.yaml meta-data.yaml --network-config=net-config.yaml
+      chdir: /var/kvm/images
+
+  - name: Set up NAT rules
+    command:
+      # Step 38
+      cmd: "{{ item }}"
+    become: True
+    loop:
+    - /sbin/iptables -t nat -A POSTROUTING -o ens3 -j MASQUERADE
+    - /sbin/iptables -A FORWARD -i ens3 -o br0 -m state  --state RELATED,ESTABLISHED -j ACCEPT
+    - /sbin/iptables -A FORWARD -i br0 -o ens3 -j ACCEPT
+
+
+  - name: Launch the VM
+    command:
+      # Step 40
+      cmd: >
+        /usr/bin/qemu-system-x86_64 -enable-kvm 
+        -drive file=/var/kvm/images/beachhead.img,if=virtio 
+        -cdrom /var/kvm/images/cloud-init.iso 
+        -daemonize
+        -display none 
+        -smp cpus=1 
+        -m 1G 
+        -net nic,netdev=tap1,macaddr={{ mac }} 
+        -netdev bridge,id=tap1,br=br0
+        -d int 
+        -D /var/log/qemu/bchd-qemu.log
+    vars:
+      mac: "{{ 'aa:a3:a3' | random_mac }}"
+    become: True 
