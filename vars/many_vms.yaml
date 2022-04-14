@@ -1,24 +1,27 @@
 vms:
-- src_img: /var/kvm/images/bionic.img
+- img_dir: /var/kvm/images
+  src_img: bionic.img
   src_img_fmt: qcow2
   ip: 172.16.0.7/24  # with CIDR
   name: vm-1
   uuid: 90210
   mac: "{{ 'aa:a3:a3' | random_mac }}"
-  keyfile: ~/.ssh/id_rsa
- 
-- src_img: /var/kvm/images/bionic.img
+  keyfile: ~/.ssh/id_rsa.pub
+
+- img_dir: /var/kvm/images
+  src_img: bionic.img
   src_img_fmt: qcow2
   ip: 172.16.0.8/24  # with CIDR
   name: vm-2
   uuid: 17111
   mac: "{{ 'aa:a3:a3' | random_mac }}"
-  keyfile: ~/.ssh/id_rsa
- 
-- src_img: /var/kvm/images/bionic.img
+  keyfile: ~/.ssh/id_rsa.pub
+
+- img_dir: /var/kvm/images
+  src_img: bionic.img
   src_img_fmt: qcow2
   ip: 172.16.0.9/24  # with CIDR
   name: vm-3
   uuid: bobthebuilder
   mac: "{{ 'aa:a3:a3' | random_mac }}"
-  keyfile: ~/.ssh/id_rsa
+  keyfile: ~/.ssh/id_rsa.pub
