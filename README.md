@@ -41,9 +41,9 @@ The playbook called "simple-launch.yml" is a down and dirty way to get a single 
 ## Launch Multiple Ubuntu 18.04 VMs using Ansible
 1. Open the file called "vars/many_vms.yaml" to see information about each VM you are about to launch. There are three example VMs in there for you now. If you want to change the base image, you will need to keep on scrolling down this page.
 
-0. Run the "advanced_launch.yml" playbook, reading in the variable file "many_vms.yaml".
+0. Run the "advanced-launch.yml" playbook, reading in the variable file "many_vms.yaml".
 
-    `$` `ansible-playbook advanced_launch.yml -e "@vars/many_vms.yaml"`
+    `$` `ansible-playbook advanced-launch.yml -e "@vars/many_vms.yaml"`
     
     > You should see some more verbose output being displayed as you are watching this playbook run.
 
