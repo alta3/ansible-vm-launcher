@@ -41,9 +41,9 @@ The playbook called "simple-launch.yml" is a down and dirty way to get a single 
 ## Launch Multiple Ubuntu 18.04 VMs using Ansible
 1. Open the file called "vars/many_vms.yaml" to see information about each VM you are about to launch. There are three example VMs in there for you now. If you want to change the base image, you will need to keep on scrolling down this page.
 
-0. Run the "advanced_launch.yaml" playbook, reading in the variable file "many_vms.yaml".
+0. Run the "advanced_launch.yml" playbook, reading in the variable file "many_vms.yaml".
 
-    `$` `ansible-playbook advanced_launch.yaml -e "@vars/many_vms.yaml"`
+    `$` `ansible-playbook advanced_launch.yml -e "@vars/many_vms.yaml"`
     
     > You should see some more verbose output being displayed as you are watching this playbook run.
 
@@ -56,9 +56,9 @@ Avoiding the hard-coded nature of the "simple-launch.yaml" would be best, so let
 
 > There are no configuration variables available for this role.
 
-1. To use this role, simply run the "advanced-launch.yaml" playbook and use the tag `host-setup`. **Note: This will also call on the _download_imgs_ role**.
+1. To use this role, simply run the "advanced-launch.yml" playbook and use the tag `host-setup`. **Note: This will also call on the _download_imgs_ role**.
 
-    `$` `ansible-playbook advanced-launch.yaml --tags host-setup`
+    `$` `ansible-playbook advanced-launch.yml --tags host-setup`
     
 ## Downloading Other VM Base Images
 
@@ -74,6 +74,6 @@ In order to download other VMs for your host, simply add in a var in the followi
       size: 8
     ```
 
-0. Run the "advanced-launch.yaml" playbook while only calling on the tag of `imgs`.
+0. Run the "advanced-launch.yml" playbook while only calling on the tag of `imgs`.
 
-    `ansible-playbook advanced-launch.yaml --tags imgs -e "@vars/images.yaml"
+    `ansible-playbook advanced-launch.yml --tags imgs -e "@vars/images.yaml"
