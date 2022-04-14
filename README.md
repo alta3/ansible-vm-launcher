@@ -76,4 +76,4 @@ In order to download other VMs for your host, simply add in a var in the followi
 
 0. Run the "advanced-launch.yml" playbook while only calling on the tag of `imgs`.
 
-    `ansible-playbook advanced-launch.yml --tags imgs -e "@vars/images.yaml"
+    `ansible-playbook advanced-launch.yml --tags imgs -e "@vars/images.yaml"`
