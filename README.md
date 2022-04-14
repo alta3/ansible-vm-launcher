@@ -20,11 +20,11 @@ You will need to use a debian based machine with at least 2 CPU and 4 GB RAM to 
 
 ## Launch a single Ubuntu 18.04 VM using Ansible
 
-The playbook called "launch.yml" is a down and dirty way to get a single VM launched quickly. It is a very straightforward, hardcoded method that is excellent for learning the steps that we need to take to launch a VM, but if you are looking for launching multiple VMs, keep scrolling down.
+The playbook called "simple-launch.yml" is a down and dirty way to get a single VM launched quickly. It is a very straightforward, hardcoded method that is excellent for learning the steps that we need to take to launch a VM, but if you are looking for launching multiple VMs, keep scrolling down.
 
 1. Launch the VM with ansible
 
-    `$` `ansible-playbook launch.yml`
+    `$` `ansible-playbook simple-launch.yml`
 
 0. The VM should be ready to go in 30 seconds or less. So after singing the "Jeapordy" theme song to yourself, attempt to ping the VM you just created.
 
