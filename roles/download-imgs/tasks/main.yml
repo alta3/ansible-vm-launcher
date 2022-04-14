@@ -1,0 +1,7 @@
+- name: Download VM base cloud images
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ item.dest }}"
+  loop: "{{ vm_cloud_images }}"
+  notify:
+  - Increase image size

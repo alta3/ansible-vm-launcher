@@ -1,0 +1,4 @@
+- name: Increase image size
+  command:
+    cmd: qemu-img resize {{ item.dest }} {{ item.size }}g
+  loop: "{{ vm_cloud_images }}"

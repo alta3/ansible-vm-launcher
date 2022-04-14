@@ -1,0 +1,6 @@
+vm_cloud_images:
+- url: https://static.alta3.com/projects/kvm/bionic-server-cloudimg-amd64.img
+  dest: /var/kvm/images/bionic.img
+  src_img_fmt: qcow2
+  size: 8
+

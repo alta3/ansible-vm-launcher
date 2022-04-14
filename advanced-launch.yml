@@ -1,0 +1,27 @@
+- name: Launch a VM
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+  - name: host-prep
+    tags:
+    - never
+    - host-setup
+
+  - name: download-imgs
+    tags:
+    - never
+    - imgs
+    - host-setup
+
+  - name: make-vm
+    vars:
+      vm:
+        src_img: /var/kvm/images/bionic.img
+        src_img_fmt: qcow2
+        ip: 172.16.0.6/24  # with CIDR
+        name: vm-1
+        uuid: 8675309
+        mac: "{{ 'aa:a3:a3' | random_mac }}"
+        keyfile: ~/.ssh/id_rsa
+
